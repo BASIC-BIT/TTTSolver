@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1345404540 source:/home/steven/Documents/Programming/TTTSolver/main.cpp
+	<iostream>
+	<math.h>
+	<string>
+
