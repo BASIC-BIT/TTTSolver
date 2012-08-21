@@ -6,7 +6,124 @@
 #include <stdio.h>
 #include <stdlib.h>
 using namespace std;
-
+bool checkwin(int board)
+{
+    int valleft=board;
+    char vals[9];
+    for(int n=8;n>=0;n--) //The space on the board
+    {
+        bool found = false;
+        if(valleft>0) //Some optomizatio nif it has already found all of the values
+        {
+            for(int nn=2;nn>0;nn--) //Checking multipliers for base 3
+            {
+                if(valleft >=nn*pow(3,n))
+                {
+                    if(nn==1)
+                    {
+                        vals[n]='X';
+                    }
+                    if(nn==2)
+                    {
+                        vals[n]='O';
+                    }
+                    found=true;
+                    valleft = valleft - nn*pow(3,n);
+                }
+            }
+        }
+        if(found==false)
+        {
+            vals[n]=' '; //Adding in space if nothing is found
+        }
+    }
+    int winconds[8][3]={{0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6}};
+    bool win=false;
+    for(int n=0;n<8;n++)
+    {
+        bool good=true;
+        for(int nn=0;nn<3;nn++)
+        {
+            if(vals[winconds[n][nn]]!='X')
+            {
+                good=false;
+                break;
+            }
+        }
+        if(good==true)
+        {
+            win=true;
+            break;
+        }
+    }
+    for(int n=0;n<8;n++)
+    {
+        bool good=true;
+        for(int nn=0;nn<3;nn++)
+        {
+            if(vals[winconds[n][nn]]!='O')
+            {
+                good=false;
+                break;
+            }
+        }
+        if(good==true)
+        {
+            win=true;
+            break;
+        }
+    }
+    return win;
+}
+char checkval(int bval,int pval)
+{
+    int valleft=bval;
+    char vals[9];
+    for(int n=8;n>=pval;n--) //The space on the board
+    {
+        bool found = false;
+        if(valleft>0) //Some optomizatio nif it has already found all of the values
+        {
+            for(int nn=2;nn>0;nn--) //Checking multipliers for base 3
+            {
+                if(valleft >=nn*pow(3,n))
+                {
+                    if(nn==1)
+                    {
+                        vals[n]='X';
+                    }
+                    if(nn==2)
+                    {
+                        vals[n]='O';
+                    }
+                    found=true;
+                    valleft = valleft - nn*pow(3,n);
+                }
+            }
+        }
+        if(found==false)
+        {
+            vals[n]=' '; //Adding in space if nothing is found
+        }
+    }
+    return vals[pval];
+}
+void setboard(double probs[][9], int width)
+{
+    for(int n=0;n<width;n++)
+    {
+        for(int nn=0;nn<9;nn++)
+        {
+            if(checkval(n,nn)==' ')
+            {
+                probs[n][nn]=1;
+            }else
+            {
+                probs[n][nn]=0;
+            }
+        }
+    }
+}
 void distboard(int value)
 {
     int valleft=value;
@@ -40,7 +157,7 @@ void distboard(int value)
     }
     cout << "[" << vals[0] << " " << vals[1] << " " << vals[2] << "]" << endl;
     cout << "[" << vals[3] << " " << vals[4] << " " << vals[5] << "]" << endl;
-    cout << "[" << vals[6] << " " << vals[7] << " " << vals[8] << "]" << endl;
+    cout << "[" << vals[6] << " " << vals[7] << " " << vals[8] << "]" << endl << endl;
     return;
 }
 void explode(string& str, int index,double probs[][9])
@@ -122,7 +239,7 @@ int choosemove(double probrow[])
     int retval=-1;
     for(int n=0;n<9;n++)
     {
-        if(rval >= pstart[n] & rval < pend[n])
+        if((rval >= pstart[n]) && (rval < pend[n]))
         {
             retval=n;
             break;
@@ -132,19 +249,80 @@ int choosemove(double probrow[])
 }
 void playgame(double probs[][9])
 {
+    int curboard=0; //Initiate board
+    cout << endl << "Use the numbers 1-9 to play your move!" << endl;
+    char compp='X';
+    int mult=0;
+    int umult=0;
+    if(compp=='X')
+    {
+        mult=1;
+        umult=2;
+    }else if(compp=='O')
+    {
+        mult=2;
+        umult=1;
+    }
+    for(int move=0;move<9;move++)
+    {
+        bool forcequit=false;
+        if((move % 2 == 0 && mult==1) || (move % 2 == 1 && mult==2)) //If computer turn
+        {
+            int move = choosemove(probs[curboard]);
+            curboard = curboard + mult*pow(3,move);
+            distboard(curboard);
+            if(checkwin(curboard))
+            {
+                forcequit=true;
+                cout << "COMPUTER WINS!";
+            }
+        }else
+        {
+            bool moved=false;
+            while(moved==false)
+            {
+                cout << endl;
+                cout << "game> ";
+                string input;
+                cin >> input;
+                if(input=="quit" || input=="back" || input=="exit")
+                {
+                    forcequit=true;
+                    break;
+                }
+                stringstream ss;
+                ss << input;
+                int move;
+                ss >> move;
+                move = move - 1;
+                if(move>=0 && move < 9 && checkval(curboard,move)==' ')
+                {
+                    curboard = curboard + umult*pow(3,move);
+                    distboard(curboard);
+                    moved=true;
+                }else
+                {
+                    cout << "Please enter a valid move from 1-9 that is not already taken.";
+                }
+            }
+            if(checkwin(curboard))
+            {
+                forcequit=true;
+                cout << "PLAYER WINS!";
+            }
+        }
+        if(forcequit)
+        {
+            break;
+        }
+    }
 }
 int main()
 {
     const int WIDTH = pow(3,9);
     const int HEIGHT = 9;
     double probs[WIDTH][HEIGHT];
-    for(int n=0;n<WIDTH;n++)
-    {
-        for(int nn=0;nn<HEIGHT;nn++)
-        {
-            probs[n][nn]=1.0;
-        }
-    }
+    setboard(probs,WIDTH);
     ifstream probfile("probs.txt");
 
     string line;
@@ -167,7 +345,7 @@ int main()
     {
         string com;
         cout << endl;
-        cout << ">";
+        cout << "> ";
         cin >> com;
         if(com == "help")
         {
@@ -180,7 +358,7 @@ int main()
             cout << "[1,2,3]" <<endl;
             cout << "[4,5,6]" <<endl;
             cout << "[7,8,9]" <<endl;
-        }else if (com == "exit")
+        }else if (com == "exit" || com=="quit")
         {
             end=true;
         }else if (com=="save")
@@ -189,6 +367,10 @@ int main()
         }else if(com=="play")
         {
             playgame(probs);
+        }else if(com=="test")
+        {
+            distboard(14);
+            cout << checkwin(14) << endl;
         }
     }
 
