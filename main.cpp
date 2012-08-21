@@ -105,6 +105,34 @@ void savefile(double probs[][9], int width, int height)
     save.close();
     return;
 }
+int choosemove(double probrow[])
+{
+    double sum=0;
+    double pstart[9];
+    double pend[9];
+    for(int n=0;n<9;n++)
+    {
+
+        pstart[n]=sum;
+        sum = sum + probrow[n];
+        pend[n]=sum;
+    }
+    srand((unsigned)time(NULL));
+    double rval=((double)rand()/(double)RAND_MAX) * sum;
+    int retval=-1;
+    for(int n=0;n<9;n++)
+    {
+        if(rval >= pstart[n] & rval < pend[n])
+        {
+            retval=n;
+            break;
+        }
+    }
+    return retval;
+}
+void playgame(double probs[][9])
+{
+}
 int main()
 {
     const int WIDTH = pow(3,9);
@@ -125,17 +153,44 @@ int main()
         int n = 0;
         while(probfile.good())
         {
-            cout << "PROCESSING LINE " << n << endl;
             getline(probfile,line);
             explode(line,n,probs);
             n++;
         }
-        cout << "FILE VALUES: " << probs[0][0] << ", " << probs[0][1] << ", " << probs[1][0] << endl;
     }else
     {
         savefile(probs, WIDTH, HEIGHT);
     }
-    distboard(11955);
+    bool end=false;
+    cout << "Please type a command, or type 'help' if you do not know what to do." << endl;
+    while(end==false)
+    {
+        string com;
+        cout << endl;
+        cout << ">";
+        cin >> com;
+        if(com == "help")
+        {
+            cout << "Help Menu:"<<endl;
+            cout << "help - Displays this menu" <<endl;
+            cout << "exit - Exits the program safely." <<endl;
+            cout << "save - Saves the current probability data into file" <<endl;
+            cout << "play - Has the computer play a game against you" <<endl;
+            cout << "While playing a game, these are the values to enter for each slot:"<<endl;
+            cout << "[1,2,3]" <<endl;
+            cout << "[4,5,6]" <<endl;
+            cout << "[7,8,9]" <<endl;
+        }else if (com == "exit")
+        {
+            end=true;
+        }else if (com=="save")
+        {
+            savefile(probs,WIDTH,HEIGHT);
+        }else if(com=="play")
+        {
+            playgame(probs);
+        }
+    }
 
     return 0;
 }
