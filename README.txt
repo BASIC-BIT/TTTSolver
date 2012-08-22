@@ -19,3 +19,5 @@ The square values are:
 Currently in human games, the computer will always play X.  That will be changed in the future.
 
 This game, code, and all related materials is private and is not to be used without express permission from the author.
+
+Steven and Bridget were here.
